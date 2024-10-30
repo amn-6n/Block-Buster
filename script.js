@@ -1,7 +1,7 @@
 "use strict";
 
 // Sound files
-const backgroundMusic = new Audio('sound/bg1.mp3');
+const backgroundMusic = new Audio('sound/new bg.mp3');
 const hitSound = new Audio('sound/slash.mp3');
 const gameOverSound = new Audio('sound/gameover.wav');
 
@@ -15,15 +15,15 @@ backgroundMusic.play();
 let gameSpeed = 1;
 
 // Colors
-const BLUE =   { r: 0x67, g: 0xd7, b: 0xf0 };
-const GREEN =  { r: 0xa6, g: 0xe0, b: 0x2c };
-const PINK =   { r: 0xfa, g: 0x24, b: 0x73 };
-const ORANGE = { r: 0xfe, g: 0x95, b: 0x22 };
-const PURPLE = { r: 0x9b, g: 0x5d, b: 0xe5 };
-const RED =    { r: 0xff, g: 0x45, b: 0x36 };
-const YELLOW = { r: 0xff, g: 0xd7, b: 0x00 };
-const TEAL =   { r: 0x00, g: 0x80, b: 0x80 };
-const WHITE =    { r: 0xff, g: 0xff, b: 0xff };
+const BLUE =    { r: 0x67, g: 0xd7, b: 0xf0 };
+const GREEN =   { r: 0xa6, g: 0xe0, b: 0x2c };
+const PINK =    { r: 0xfa, g: 0x24, b: 0x73 };
+const ORANGE =  { r: 0xfe, g: 0x95, b: 0x22 };
+const PURPLE =  { r: 0x9b, g: 0x5d, b: 0xe5 };
+const RED =     { r: 0xff, g: 0x45, b: 0x36 };
+const YELLOW =  { r: 0xff, g: 0xd7, b: 0x00 };
+const TEAL =    { r: 0x00, g: 0x80, b: 0x80 };
+const WHITE =   { r: 0xff, g: 0xff, b: 0xff };
 const CYAN =    { r: 0x00, g: 0xff, b: 0xff };
 const MAGENTA = { r: 0xff, g: 0x00, b: 0xff };
 const LIME =    { r: 0x32, g: 0xcd, b: 0x32 };
@@ -1691,6 +1691,11 @@ function tick(width, height, simTime, simSpeed, lag) {
 				if (!target.hit) {
 					target.hit = true;
 
+					if (navigator.vibrate) {  
+						hitSound.play();// Check if the device supports vibration
+						navigator.vibrate([50]);  // Short 50ms vibration for slicing
+					}
+
 					target.xD += pointerDeltaScaled.x * hitDampening;
 					target.yD += pointerDeltaScaled.y * hitDampening;
 					target.rotateXD += pointerDeltaScaled.y * 0.001;
@@ -1707,6 +1712,8 @@ function tick(width, height, simTime, simSpeed, lag) {
 							incrementCubeCount(1);
 							createBurst(target, forceMultiplier);
 							sparkBurst(hitX, hitY, 8, sparkSpeed);
+
+
 							if (target.wireframe) {
 								hitSound.play();
 								slowmoRemaining = slowmoDuration;
