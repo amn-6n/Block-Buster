@@ -235,7 +235,6 @@ button::before {
 	transition: opacity 0.3s, transform 0.3s;
 }
 
-/* No `:focus` styles because this is a mouse/touch game! */
 button:active {
 	opacity: 1;
 }
@@ -271,3 +270,4 @@ a {
 .credits{
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
+

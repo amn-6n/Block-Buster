@@ -8,7 +8,7 @@ const gameOverSound = new Audio('sound/gameover.wav');
 
 
 backgroundMusic.loop = true;
-backgroundMusic.play();
+// backgroundMusic.play();
 
 
 // Timing multiplier for entire game engine.
@@ -982,16 +982,21 @@ const getTarget = (() => {
 		const randomIndex = Math.floor(Math.random() * allColors.length);
 		const randomColor = allColors[randomIndex];
 		
-		console.log(randomColor);
 
 		if (state.game.cubeCount >= slowmoThreshold && slowmoSpawner.shouldSpawn()) {
 			color =  randomColor;
 			wireframe = true;
 			health = 2;
+			if (navigator.vibrate) {
+                navigator.vibrate([100,30,500]);
+            }
 		}
 		else if (state.game.cubeCount >= strongThreshold && strongSpawner.shouldSpawn()) {
 			color = randomColor;
 			health = 3;
+			if (navigator.vibrate) {
+                navigator.vibrate(5000);
+            }
 		}
 
 		// Target Creation
@@ -1296,11 +1301,17 @@ function renderScoreHud() {
 renderScoreHud();
 
 
+
 //////////////////
 // Pause Button //
 //////////////////
 
-handlePointerDown($('.pause-btn'), () => pauseGame());
+handlePointerDown($('.pause-btn'), () => {
+	if (navigator.vibrate) { 
+        navigator.vibrate([100]);
+    }
+	pauseGame();
+});
 
 
 ////////////////////
@@ -1383,6 +1394,9 @@ renderMenus();
 
 // Main Menu
 handleClick($('.play-normal-btn'), () => {
+	if (navigator.vibrate) {
+        navigator.vibrate([30]);  
+    }
 	backgroundMusic.pause(); // Stop background music
     backgroundMusic.currentTime = 0; // Reset to the beginning
 	setGameMode(GAME_MODE_RANKED);
@@ -1391,6 +1405,9 @@ handleClick($('.play-normal-btn'), () => {
 });
 
 handleClick($('.play-casual-btn'), () => {
+	if (navigator.vibrate) {
+        navigator.vibrate([30]);  
+    }
 	backgroundMusic.pause(); // Stop background music
     backgroundMusic.currentTime = 0; // Reset to the beginning
 	setGameMode(GAME_MODE_CASUAL);
@@ -1399,11 +1416,22 @@ handleClick($('.play-casual-btn'), () => {
 });
 
 // Pause Menu
-handleClick($('.resume-btn'), () => resumeGame());
-handleClick($('.menu-btn--pause'), () => setActiveMenu(MENU_MAIN));
+handleClick($('.resume-btn'), () => {
+	if (navigator.vibrate) {
+        navigator.vibrate([30]);  
+    }
+	resumeGame()});
+handleClick($('.menu-btn--pause'), () => {
+	if (navigator.vibrate) {
+        navigator.vibrate([30]);  
+    }
+	setActiveMenu(MENU_MAIN)});
 
 // Score Menu
 handleClick($('.play-again-btn'), () => {
+	if (navigator.vibrate) {
+        navigator.vibrate([50]);  
+    }
 	setActiveMenu(null);
 	resetGame();
 });
@@ -1478,6 +1506,9 @@ function resetGame() {
 }
 
 function pauseGame() {
+	if (navigator.vibrate) {
+		navigator.vibrate(50);
+	}
 	isInGame() && setActiveMenu(MENU_PAUSE);
 }
 
