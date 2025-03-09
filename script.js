@@ -1,7 +1,7 @@
 "use strict";
 
 // Sound files
-const backgroundMusic = new Audio('sound/new bg.mp3');
+const backgroundMusic = new Audio('sound/bgMusic.mp3');
 const hitSound = new Audio('sound/slash.mp3');
 const gameOverSound = new Audio('sound/gameover.wav');
 
@@ -602,6 +602,109 @@ function makeCubeModel({ scale=1 }) {
 	};
 }
 
+// Create a 3D triangle model (triangular prism)
+function makeTriangleModel({ scale=1 }) {
+	return {
+		vertices: [
+			// Top triangle
+			{ x: -scale, y: -scale, z: scale },   // 0
+			{ x: scale, y: -scale, z: scale },    // 1
+			{ x: 0, y: scale, z: scale },         // 2
+			// Bottom triangle
+			{ x: -scale, y: -scale, z: -scale },  // 3
+			{ x: scale, y: -scale, z: -scale },   // 4
+			{ x: 0, y: scale, z: -scale }         // 5
+		],
+		polys: [
+			// Front triangle (facing camera)
+			{ vIndexes: [0, 1, 2] },
+			// Back triangle (facing away)
+			{ vIndexes: [3, 5, 4] },  // Note: reversed order for correct face culling
+			// Left side rectangle
+			{ vIndexes: [0, 2, 5, 3] },
+			// Right side rectangle
+			{ vIndexes: [1, 4, 5, 2] },
+			// Bottom rectangle
+			{ vIndexes: [0, 3, 4, 1] }
+		]
+	};
+}
+
+// Create a UV sphere model with the specified number of segments
+function makeSphereModel({ scale=1, latitudeLines=16, longitudeLines=32 }) {
+    const vertices = [];
+    const polys = [];
+    
+    // Generate vertices
+    // Add top vertex
+    vertices.push({ x: 0, y: scale, z: 0 });
+    
+    // Generate vertices for each latitude line (excluding poles)
+    for (let lat = 1; lat < latitudeLines; lat++) {
+        const phi = (lat / latitudeLines) * Math.PI;
+        const y = scale * Math.cos(phi);
+        const radius = scale * Math.sin(phi);
+        
+        for (let lon = 0; lon < longitudeLines; lon++) {
+            const theta = (lon / longitudeLines) * TAU;
+            const x = radius * Math.sin(theta);
+            const z = radius * Math.cos(theta);
+            vertices.push({ x, y, z });
+        }
+    }
+    
+    // Add bottom vertex
+    vertices.push({ x: 0, y: -scale, z: 0 });
+    
+    // Generate polygons
+    // Top cap
+    for (let lon = 0; lon < longitudeLines; lon++) {
+        const nextLon = (lon + 1) % longitudeLines;
+        polys.push({
+            vIndexes: [
+                0,
+                lon + 1,
+                nextLon + 1
+            ]
+        });
+    }
+    
+    // Middle segments
+    for (let lat = 0; lat < latitudeLines - 2; lat++) {
+        const rowStart = 1 + lat * longitudeLines;
+        const nextRowStart = rowStart + longitudeLines;
+        
+        for (let lon = 0; lon < longitudeLines; lon++) {
+            const nextLon = (lon + 1) % longitudeLines;
+            
+            polys.push({
+                vIndexes: [
+                    rowStart + lon,
+                    nextRowStart + lon,
+                    nextRowStart + nextLon,
+                    rowStart + nextLon
+                ]
+            });
+        }
+    }
+    
+    // Bottom cap
+    const lastVertex = vertices.length - 1;
+    const lastRowStart = lastVertex - longitudeLines;
+    for (let lon = 0; lon < longitudeLines; lon++) {
+        const nextLon = (lon + 1) % longitudeLines;
+        polys.push({
+            vIndexes: [
+                lastVertex,
+                lastRowStart + nextLon,
+                lastRowStart + lon
+            ]
+        });
+    }
+    
+    return { vertices, polys };
+}
+
 // ***************************************************************************
 // Not very optimized - lots of duplicate vertices are generated.
 function makeRecursiveCubeModel({ recursionLevel, splitFn, color, scale=1 }) {
@@ -936,12 +1039,29 @@ const getTarget = (() => {
 		const pool = wireframe ? targetWireframePool : targetPool;
 		let target = pool.get(color).pop();
 		if (!target) {
-			target = new Entity({
-				model: optimizeModel(makeRecursiveCubeModel({
+			// Randomly choose between cube, triangle, and sphere
+			const shapeType = Math.random();
+			let model;
+			if (shapeType < 0.33) {
+				model = optimizeModel(makeRecursiveCubeModel({
 					recursionLevel: 1,
 					splitFn: mengerSpongeSplit,
 					scale: targetRadius
-				})),
+				}));
+			} else if (shapeType < 0.66) {
+				model = optimizeModel(makeTriangleModel({
+					scale: targetRadius
+				}));
+			} else {
+				model = optimizeModel(makeSphereModel({
+					scale: targetRadius,
+					latitudeLines: 16,
+					longitudeLines: 32
+				}));
+			}
+
+			target = new Entity({
+				model: model,
 				color: color,
 				wireframe: wireframe
 			});
