@@ -1,2 +1,2 @@
 # Block-Buster
-
+This game has some cool feature like Haptic Feedback, time slo-mo and a mini boss...
